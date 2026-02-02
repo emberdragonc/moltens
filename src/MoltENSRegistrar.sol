@@ -31,6 +31,7 @@ contract MoltENSRegistrar is Ownable {
     error LabelTooLong();
     error InvalidCharacter();
     error EmptyLabel();
+    error ZeroAddress();
 
     // ============ Events ============
     event SubdomainRegistered(
@@ -91,6 +92,12 @@ contract MoltENSRegistrar is Ownable {
         address _signer,
         uint256 _fee
     ) Ownable(msg.sender) {
+        if (_nameWrapper == address(0)) revert ZeroAddress();
+        if (_resolver == address(0)) revert ZeroAddress();
+        if (_partner == address(0)) revert ZeroAddress();
+        if (_treasury == address(0)) revert ZeroAddress();
+        if (_signer == address(0)) revert ZeroAddress();
+        
         nameWrapper = INameWrapper(_nameWrapper);
         resolver = _resolver;
         partner = _partner;
@@ -198,6 +205,7 @@ contract MoltENSRegistrar is Ownable {
      * @param newSigner New signer address
      */
     function setSigner(address newSigner) external onlyOwner {
+        if (newSigner == address(0)) revert ZeroAddress();
         emit SignerUpdated(signer, newSigner);
         signer = newSigner;
     }
@@ -216,6 +224,7 @@ contract MoltENSRegistrar is Ownable {
      * @param newTreasury New treasury address
      */
     function setTreasury(address payable newTreasury) external onlyOwner {
+        if (newTreasury == address(0)) revert ZeroAddress();
         emit TreasuryUpdated(treasury, newTreasury);
         treasury = newTreasury;
     }

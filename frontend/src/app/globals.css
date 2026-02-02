@@ -1,0 +1,39 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&display=swap');
+
+:root {
+  --molt-bg: #0a0a0a;
+  --molt-card: #1a1a1b;
+  --molt-border: #333333;
+  --molt-red: #e01b24;
+  --molt-teal: #00d4aa;
+}
+
+body {
+  font-family: 'IBM Plex Mono', monospace;
+  background: var(--molt-bg);
+  color: white;
+  min-height: 100vh;
+}
+
+/* Custom animations */
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-5px); }
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 5px var(--molt-teal); }
+  50% { box-shadow: 0 0 20px var(--molt-teal); }
+}
+
+.pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
