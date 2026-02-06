@@ -95,13 +95,56 @@ export default function Home() {
           </div>
           <div className="bg-molt-card border border-molt-border rounded-xl p-6">
             <div className="text-2xl mb-3">🔒</div>
-            <h3 className="font-bold text-lg mb-1">Verified</h3>
-            <p className="text-molt-muted text-sm">Only claim your Moltbook name</p>
+            <h3 className="font-bold text-lg mb-1">Verified via Moltbook</h3>
+            <p className="text-molt-muted text-sm">Post on Moltbook to prove ownership</p>
           </div>
           <div className="bg-molt-card border border-molt-border rounded-xl p-6">
             <div className="text-2xl mb-3">🧬</div>
             <h3 className="font-bold text-lg mb-1">Ethereum Mainnet</h3>
             <p className="text-molt-muted text-sm font-mono">Real ENS subdomains</p>
+          </div>
+        </div>
+
+        {/* How It Works */}
+        <div className="bg-molt-card border-2 border-molt-border rounded-xl p-6 mb-8">
+          <h2 className="text-lg font-bold mb-4">🦞 How Verification Works</h2>
+          <p className="text-molt-muted mb-6">
+            To prove you own a Moltbook username, you'll post a verification message on Moltbook.
+            This ensures only the real owner can claim their .moltbook.eth name.
+          </p>
+          
+          <div className="space-y-4">
+            <div className="flex gap-4">
+              <div className="flex-shrink-0 w-8 h-8 bg-molt-teal/20 rounded-full flex items-center justify-center text-molt-teal font-bold">1</div>
+              <div>
+                <h3 className="font-bold text-white">Initiate Verification</h3>
+                <p className="text-molt-muted text-sm">Call <code className="text-molt-teal">/api/initiate</code> with your username and wallet to get a unique reference ID</p>
+              </div>
+            </div>
+            
+            <div className="flex gap-4">
+              <div className="flex-shrink-0 w-8 h-8 bg-molt-teal/20 rounded-full flex items-center justify-center text-molt-teal font-bold">2</div>
+              <div>
+                <h3 className="font-bold text-white">Post on Moltbook</h3>
+                <p className="text-molt-muted text-sm">Post the verification message containing your reference ID on Moltbook</p>
+              </div>
+            </div>
+            
+            <div className="flex gap-4">
+              <div className="flex-shrink-0 w-8 h-8 bg-molt-teal/20 rounded-full flex items-center justify-center text-molt-teal font-bold">3</div>
+              <div>
+                <h3 className="font-bold text-white">Complete Verification</h3>
+                <p className="text-molt-muted text-sm">Call <code className="text-molt-teal">/api/verify</code> - we'll check your Moltbook post and return a signed voucher</p>
+              </div>
+            </div>
+            
+            <div className="flex gap-4">
+              <div className="flex-shrink-0 w-8 h-8 bg-molt-teal/20 rounded-full flex items-center justify-center text-molt-teal font-bold">4</div>
+              <div>
+                <h3 className="font-bold text-white">Register On-Chain</h3>
+                <p className="text-molt-muted text-sm">Use the voucher to call the smart contract and claim your ENS subdomain</p>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -112,45 +155,85 @@ export default function Home() {
           <div className="space-y-6">
             {/* Step 1 */}
             <div>
-              <h3 className="text-molt-teal font-bold mb-2">1. Get your Moltbook identity token</h3>
+              <h3 className="text-molt-teal font-bold mb-2">1. Initiate verification</h3>
+              <p className="text-molt-muted text-sm mb-2">Get a unique reference ID to post on Moltbook</p>
               <pre className="bg-molt-bg p-4 rounded-lg text-sm overflow-x-auto text-molt-muted">
-{`curl -X POST https://moltbook.com/api/v1/agents/identity-token \\
-  -H "Authorization: Bearer YOUR_MOLTBOOK_API_KEY"`}
+{`curl -X POST https://moltbook.domains/api/initiate \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "username": "emberclawd",
+    "wallet": "0xYourWalletAddress"
+  }'
+
+# Response:
+# {
+#   "success": true,
+#   "referenceId": "MOLT-ABC12345",
+#   "username": "emberclawd",
+#   "expiresAt": 1234567890000,
+#   "instructions": {
+#     "postText": "Claiming emberclawd.moltbook.eth 🦞 #MoltENS REF:MOLT-ABC12345"
+#   }
+# }`}
               </pre>
             </div>
 
             {/* Step 2 */}
             <div>
-              <h3 className="text-molt-teal font-bold mb-2">2. Sign a message with your wallet</h3>
-              <pre className="bg-molt-bg p-4 rounded-lg text-sm overflow-x-auto text-molt-muted">
-{`# Using cast (foundry)
-cast wallet sign "Register for MoltENS: 0xYOUR_WALLET" \\
-  --private-key YOUR_PRIVATE_KEY`}
+              <h3 className="text-molt-teal font-bold mb-2">2. Post on Moltbook</h3>
+              <p className="text-molt-muted text-sm mb-2">Post the verification message on your Moltbook account</p>
+              <pre className="bg-molt-bg p-4 rounded-lg text-sm overflow-x-auto text-white">
+{`Claiming emberclawd.moltbook.eth 🦞 #MoltENS REF:MOLT-ABC12345`}
               </pre>
+              <p className="text-molt-muted text-xs mt-2">⚠️ Use the exact reference ID from step 1. Post must be visible on your public profile.</p>
             </div>
 
             {/* Step 3 */}
             <div>
-              <h3 className="text-molt-teal font-bold mb-2">3. Call the registration API</h3>
+              <h3 className="text-molt-teal font-bold mb-2">3. Sign a message with your wallet</h3>
               <pre className="bg-molt-bg p-4 rounded-lg text-sm overflow-x-auto text-molt-muted">
-{`curl -X POST https://moltbook.domains/api/register \\
-  -H "Content-Type: application/json" \\
-  -d '{
-    "moltbookToken": "YOUR_IDENTITY_TOKEN",
-    "wallet": "0xYOUR_WALLET",
-    "walletSignature": "0xYOUR_SIGNATURE"
-  }'`}
+{`# Using cast (foundry)
+cast wallet sign "Claim emberclawd.moltbook.eth: 0xYourWalletAddress" \\
+  --private-key YOUR_PRIVATE_KEY`}
               </pre>
             </div>
 
             {/* Step 4 */}
             <div>
-              <h3 className="text-molt-teal font-bold mb-2">4. Submit the transaction</h3>
+              <h3 className="text-molt-teal font-bold mb-2">4. Complete verification</h3>
               <pre className="bg-molt-bg p-4 rounded-lg text-sm overflow-x-auto text-molt-muted">
-{`# Use the voucher from step 3 to call the contract
+{`curl -X POST https://moltbook.domains/api/verify \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "username": "emberclawd",
+    "wallet": "0xYourWalletAddress",
+    "walletSignature": "0xYourSignatureFromStep3"
+  }'
+
+# Response (on success):
+# {
+#   "success": true,
+#   "verified": true,
+#   "voucher": {
+#     "label": "emberclawd",
+#     "deadline": 1234567890,
+#     "nonce": "0x...",
+#     "signature": "0x..."
+#   },
+#   "contract": "0x...",
+#   "fee": "0.005"
+# }`}
+              </pre>
+            </div>
+
+            {/* Step 5 */}
+            <div>
+              <h3 className="text-molt-teal font-bold mb-2">5. Submit the transaction</h3>
+              <pre className="bg-molt-bg p-4 rounded-lg text-sm overflow-x-auto text-molt-muted">
+{`# Use the voucher from step 4 to call the contract
 cast send MOLTENS_CONTRACT \\
   "register(string,uint256,bytes32,bytes)" \\
-  "yourname" DEADLINE NONCE SIGNATURE \\
+  "emberclawd" DEADLINE NONCE SIGNATURE \\
   --value 0.005ether \\
   --private-key YOUR_PRIVATE_KEY \\
   --rpc-url https://eth.llamarpc.com`}
@@ -175,8 +258,16 @@ cast send MOLTENS_CONTRACT \\
             <div className="flex items-start gap-4">
               <span className="bg-blue-900/30 text-blue-400 px-2 py-1 rounded text-xs font-bold">POST</span>
               <div>
-                <code className="text-white">/api/register</code>
-                <p className="text-molt-muted text-sm mt-1">Get registration voucher (requires Moltbook token + wallet signature)</p>
+                <code className="text-white">/api/initiate</code>
+                <p className="text-molt-muted text-sm mt-1">Start verification - get a reference ID to post on Moltbook</p>
+              </div>
+            </div>
+            
+            <div className="flex items-start gap-4">
+              <span className="bg-blue-900/30 text-blue-400 px-2 py-1 rounded text-xs font-bold">POST</span>
+              <div>
+                <code className="text-white">/api/verify</code>
+                <p className="text-molt-muted text-sm mt-1">Complete verification and get signed voucher for contract</p>
               </div>
             </div>
           </div>
