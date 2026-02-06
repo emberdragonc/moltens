@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { verifyMessage, createWalletClient, http, privateKeyToAccount } from 'viem'
+import { verifyMessage, createWalletClient, http } from 'viem'
+import { privateKeyToAccount } from 'viem/accounts'
 import { mainnet } from 'viem/chains'
 import { keccak256, encodePacked, toHex } from 'viem'
 import { getVerificationByUsernameAndWallet, deleteVerification } from '@/lib/verification-store'
