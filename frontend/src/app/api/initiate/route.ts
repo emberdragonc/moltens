@@ -85,17 +85,23 @@ export async function POST(request: NextRequest) {
     // Build the post text the user needs to post on Moltbook
     const postText = `Claiming ${normalizedUsername}.moltbook.eth 🦞 #MoltENS REF:${verificationRequest.referenceId}`
 
+    // Build the message the user needs to sign with their wallet
+    // IMPORTANT: Use original wallet address (checksummed), not lowercase
+    const signMessage = `Claim ${normalizedUsername}.moltbook.eth: ${wallet}`
+
     return NextResponse.json({
       success: true,
       referenceId: verificationRequest.referenceId,
       username: normalizedUsername,
       fullName: `${normalizedUsername}.moltbook.eth`,
-      wallet: wallet.toLowerCase(),
+      wallet: wallet, // Return original wallet (checksummed)
       expiresAt: verificationRequest.expiresAt,
       instructions: {
         step1: 'Post on Moltbook with this exact text:',
         postText,
-        step2: 'After posting, call /api/verify with your wallet signature to complete registration',
+        step2: 'Sign this message with your wallet:',
+        signMessage,
+        step3: 'Call /api/verify with your wallet signature to complete registration',
         expiresIn: '30 minutes',
         note: 'The reference ID must be visible in your public Moltbook posts'
       }

@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { verifyMessage, createWalletClient, http } from 'viem'
+import { verifyMessage } from 'viem'
 import { privateKeyToAccount } from 'viem/accounts'
-import { mainnet } from 'viem/chains'
-import { keccak256, encodePacked, toHex } from 'viem'
+import { keccak256, encodePacked } from 'viem'
 import { getVerificationByUsernameAndWallet, deleteVerification } from '@/lib/verification-store'
 import { verifyMoltbookPost } from '@/lib/moltbook-verifier'
 
@@ -76,7 +75,9 @@ export async function POST(request: NextRequest) {
     const normalizedWallet = wallet.toLowerCase()
 
     // Verify wallet signature
-    const expectedMessage = `Claim ${normalizedUsername}.moltbook.eth: ${normalizedWallet}`
+    // IMPORTANT: Use the ORIGINAL wallet address (checksummed) in the message,
+    // since that's what the user signed. The signature won't verify if we use lowercase.
+    const expectedMessage = `Claim ${normalizedUsername}.moltbook.eth: ${wallet}`
     let isValidSignature = false
     try {
       isValidSignature = await verifyMessage({
@@ -142,31 +143,30 @@ export async function POST(request: NextRequest) {
       [wallet as `0x${string}`, normalizedUsername, BigInt(Date.now())]
     ))
 
-    // Sign the voucher
+    // Sign the voucher (must match contract's signature verification)
+    // Contract uses: keccak256(abi.encodePacked(msg.sender, label, deadline, nonce, chainid, contract))
+    // Then wraps with toEthSignedMessageHash() for personal_sign
     let voucherSignature = '0x' + '00'.repeat(65) // Placeholder
     
     if (SIGNER_PRIVATE_KEY) {
       try {
-        // Create the message hash (must match contract)
+        // Create the message hash (must match contract exactly)
+        // Contract: keccak256(abi.encodePacked(msg.sender, label, deadline, nonce, block.chainid, address(this)))
         const messageHash = keccak256(encodePacked(
           ['address', 'string', 'uint256', 'bytes32', 'uint256', 'address'],
           [
-            wallet as `0x${string}`,
-            normalizedUsername,
-            BigInt(deadline),
-            nonce,
-            BigInt(CHAIN_ID),
-            MOLTENS_CONTRACT as `0x${string}`
+            wallet as `0x${string}`,  // msg.sender (claimer)
+            normalizedUsername,        // label
+            BigInt(deadline),          // deadline
+            nonce,                     // nonce
+            BigInt(CHAIN_ID),          // block.chainid
+            MOLTENS_CONTRACT as `0x${string}`  // address(this)
           ]
         ))
 
         // Sign with backend signer
+        // signMessage with raw hash applies toEthSignedMessageHash prefix automatically
         const account = privateKeyToAccount(SIGNER_PRIVATE_KEY as `0x${string}`)
-        const client = createWalletClient({
-          account,
-          chain: mainnet,
-          transport: http(),
-        })
         
         voucherSignature = await account.signMessage({
           message: { raw: messageHash },
